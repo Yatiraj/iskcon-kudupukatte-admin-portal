@@ -1,5 +1,6 @@
 import React from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
+import logo from '../assets/iskcon-kudupukatte-logo.png';
 
 const Navbar = ({ role, onLogout }) => {
   const navigate = useNavigate();
@@ -10,7 +11,11 @@ const Navbar = ({ role, onLogout }) => {
   };
 
   return (
-    <nav className="bg-gray-900 text-white w-full py-3 flex items-center gap-4 shadow-md px-6">
+    <nav className="bg-gray-900 text-white w-full py-3 flex items-center gap-4 shadow-md">
+      <div className="flex items-center gap-2 mr-6 px-6">
+        <img src={logo} alt="ISKCON Kudupu Katte Logo" className="h-12 w-auto" />
+        <span className="text-xl font-bold tracking-wide">Admin Portal</span>
+      </div>
       <NavLink
         to="/dashboard"
         className={({ isActive }) =>
@@ -44,6 +49,7 @@ const Navbar = ({ role, onLogout }) => {
       >
         Logout
       </button>
+      <div />
     </nav>
   );
 };
