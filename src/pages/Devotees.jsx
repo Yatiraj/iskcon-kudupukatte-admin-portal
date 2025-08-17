@@ -267,274 +267,285 @@ const Devotees = () => {
   return (
     <>
       <Navbar role={role} onLogout={handleLogout} />
-      <div className="p-8">
-      <h2 className="text-xl font-bold mb-4">Devotee Management</h2>
-      <input
-        type="text"
-        placeholder="Search by phone or name"
-        className="mb-4 p-2 border rounded w-full max-w-md"
-        value={search}
-        onChange={e => setSearch(e.target.value)}
-      />
-      {/* Add Devotee and Import buttons for admin only */}
-      {role === 'admin' && (
-        <div className="mb-4 flex gap-2">
-          <button
-            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-            onClick={() => openModal()}
-          >
-            Add Devotee
-          </button>
-          <button
-            className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
-            onClick={openImport}
-          >
-            Import from Excel
-          </button>
-          <button
-            className="bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-700"
-            onClick={handleDownloadExcel}
-          >
-            Download Excel
-          </button>
-        </div>
-      )}
-      {/* Modal Popup for Add/Edit */}
-      {showModal && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50">
-          <div className="bg-white p-6 rounded shadow-md w-full max-w-lg relative">
-            <button
-              className="absolute top-2 right-2 text-gray-500 hover:text-gray-700"
-              onClick={closeModal}
-            >
-              &times;
-            </button>
-            <h3 className="text-lg font-bold mb-4">{editMode ? 'Edit Devotee' : 'Add Devotee'}</h3>
-            <form onSubmit={handleSubmit} className="space-y-3">
-              <div>
-                <label className="block font-medium">Phone<span className="text-red-500">*</span></label>
-                <input
-                  name="phone"
-                  value={form.phone}
-                  onChange={handleChange}
-                  className="border rounded p-2 w-full"
-                  required
-                  disabled={editMode}
-                />
-              </div>
-              <div>
-                <label className="block font-medium">Name<span className="text-red-500">*</span></label>
-                <input
-                  name="name"
-                  value={form.name}
-                  onChange={handleChange}
-                  className="border rounded p-2 w-full"
-                  required
-                />
-              </div>
-              <div>
-                <label className="block font-medium">Email</label>
-                <input
-                  name="email"
-                  value={form.email}
-                  onChange={handleChange}
-                  className="border rounded p-2 w-full"
-                  type="email"
-                />
-              </div>
-              <div>
-                <label className="block font-medium">Address</label>
-                <input
-                  name="address"
-                  value={form.address}
-                  onChange={handleChange}
-                  className="border rounded p-2 w-full"
-                />
-              </div>
-              <div>
-                <label className="block font-medium">Donor Type</label>
-                <select
-                  name="donor_type"
-                  value={form.donor_type}
-                  onChange={handleChange}
-                  className="border rounded p-2 w-full"
-                >
-                  <option value="">Select</option>
-                  {donorTypes.map(type => (
-                    <option key={type} value={type}>{type}</option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className="block font-medium">Association Status</label>
-                <select
-                  name="association_status"
-                  value={form.association_status}
-                  onChange={handleChange}
-                  className="border rounded p-2 w-full"
-                >
-                  <option value="">Select</option>
-                  {associationStatuses.map(status => (
-                    <option key={status} value={status}>{status}</option>
-                  ))}
-                </select>
-              </div>
-              {formError && <div className="text-red-600">{formError}</div>}
-              <button
-                type="submit"
-                className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
-                disabled={submitting}
-              >
-                {submitting ? (editMode ? 'Saving...' : 'Adding...') : (editMode ? 'Save Changes' : 'Add Devotee')}
-              </button>
-            </form>
-          </div>
-        </div>
-      )}
-      {/* Import Modal */}
-      {showImport && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50">
-          <div className="bg-white p-6 rounded shadow-md w-full max-w-lg relative">
-            <button
-              className="absolute top-2 right-2 text-gray-500 hover:text-gray-700"
-              onClick={closeImport}
-            >
-              &times;
-            </button>
-            <h3 className="text-lg font-bold mb-4">Import Devotees from Excel/CSV</h3>
+      <div className="min-h-screen bg-gray-100">
+        <div className="p-8 max-w-7xl mx-auto">
+          <div className="bg-white rounded-xl shadow-lg p-8">
+            <h2 className="text-2xl font-bold mb-6 text-gray-800">Devotee Management</h2>
             <input
-              type="file"
-              accept=".xlsx,.xls,.csv"
-              onChange={handleFile}
-              className="mb-4"
+              type="text"
+              placeholder="Search by phone or name"
+              className="mb-4 p-2 border rounded w-full max-w-md focus:outline-none focus:ring-2 focus:ring-blue-400"
+              value={search}
+              onChange={e => setSearch(e.target.value)}
             />
-            {importError && <div className="text-red-600 mb-2">{importError}</div>}
-            {importSuccess && <div className="text-green-600 mb-2">{importSuccess}</div>}
-            {importRows.length > 0 && (
-              <>
-                <div className="mb-2">Preview ({importRows.length} rows):</div>
-                <div className="max-h-40 overflow-y-auto border mb-2">
-                  <table className="min-w-full text-xs">
-                    <thead>
-                      <tr>
-                        <th className="px-2 py-1 border">Phone</th>
-                        <th className="px-2 py-1 border">Name</th>
-                        <th className="px-2 py-1 border">Email</th>
-                        <th className="px-2 py-1 border">Address</th>
-                        <th className="px-2 py-1 border">Donor Type</th>
-                        <th className="px-2 py-1 border">Association Status</th>
-                        <th className="px-2 py-1 border">Error</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {importValidation.map((v, i) => (
-                        <tr key={i}>
-                          <td className="px-2 py-1 border">{v.row.phone}</td>
-                          <td className="px-2 py-1 border">{v.row.name}</td>
-                          <td className="px-2 py-1 border">{v.row.email}</td>
-                          <td className="px-2 py-1 border">{v.row.address}</td>
-                          <td className="px-2 py-1 border">{v.row.donor_type}</td>
-                          <td className="px-2 py-1 border">{v.row.association_status}</td>
-                          <td className="px-2 py-1 border text-red-600">{v.error}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
+            {/* Add Devotee and Import buttons for admin only */}
+            {role === 'admin' && (
+              <div className="mb-6 flex gap-2">
                 <button
-                  className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
-                  onClick={handleImport}
-                  disabled={importing || hasImportErrors}
+                  className="bg-blue-600 text-white px-4 py-2 rounded shadow hover:bg-blue-700 transition"
+                  onClick={() => openModal()}
                 >
-                  {importing ? 'Importing...' : 'Import All'}
+                  Add Devotee
                 </button>
-                {hasImportErrors && (
-                  <div className="text-red-600 mt-2">Fix all errors before importing.</div>
-                )}
-              </>
+                <button
+                  className="bg-green-600 text-white px-4 py-2 rounded shadow hover:bg-green-700 transition"
+                  onClick={openImport}
+                >
+                  Import from Excel
+                </button>
+                <button
+                  className="bg-gray-600 text-white px-4 py-2 rounded shadow hover:bg-gray-700 transition"
+                  onClick={handleDownloadExcel}
+                >
+                  Download Excel
+                </button>
+              </div>
+            )}
+            {/* Modal Popup for Add/Edit */}
+            {showModal && (
+              <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+                <div className="bg-white p-8 rounded-xl shadow-lg w-full max-w-lg relative">
+                  <button
+                    className="absolute top-2 right-2 text-gray-500 hover:text-gray-700 text-2xl"
+                    onClick={closeModal}
+                  >
+                    &times;
+                  </button>
+                  <h3 className="text-xl font-bold mb-4 text-gray-800">{editMode ? 'Edit Devotee' : 'Add Devotee'}</h3>
+                  <form onSubmit={handleSubmit} className="space-y-4">
+                    <div>
+                      <label className="block font-medium text-gray-700">Phone<span className="text-red-500">*</span></label>
+                      <input
+                        name="phone"
+                        value={form.phone}
+                        onChange={handleChange}
+                        className="border rounded p-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-400"
+                        required
+                        disabled={editMode}
+                      />
+                    </div>
+                    <div>
+                      <label className="block font-medium text-gray-700">Name<span className="text-red-500">*</span></label>
+                      <input
+                        name="name"
+                        value={form.name}
+                        onChange={handleChange}
+                        className="border rounded p-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-400"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className="block font-medium text-gray-700">Email</label>
+                      <input
+                        name="email"
+                        value={form.email}
+                        onChange={handleChange}
+                        className="border rounded p-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-400"
+                        type="email"
+                      />
+                    </div>
+                    <div>
+                      <label className="block font-medium text-gray-700">Address</label>
+                      <input
+                        name="address"
+                        value={form.address}
+                        onChange={handleChange}
+                        className="border rounded p-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-400"
+                      />
+                    </div>
+                    <div>
+                      <label className="block font-medium text-gray-700">Donor Type</label>
+                      <select
+                        name="donor_type"
+                        value={form.donor_type}
+                        onChange={handleChange}
+                        className="border rounded p-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-400"
+                      >
+                        <option value="">Select</option>
+                        {donorTypes.map(type => (
+                          <option key={type} value={type}>{type}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block font-medium text-gray-700">Association Status</label>
+                      <select
+                        name="association_status"
+                        value={form.association_status}
+                        onChange={handleChange}
+                        className="border rounded p-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-400"
+                      >
+                        <option value="">Select</option>
+                        {associationStatuses.map(status => (
+                          <option key={status} value={status}>{status}</option>
+                        ))}
+                      </select>
+                    </div>
+                    {formError && <div className="text-red-600">{formError}</div>}
+                    <button
+                      type="submit"
+                      className="bg-green-600 text-white px-4 py-2 rounded shadow hover:bg-green-700 transition"
+                      disabled={submitting}
+                    >
+                      {submitting ? (editMode ? 'Saving...' : 'Adding...') : (editMode ? 'Save Changes' : 'Add Devotee')}
+                    </button>
+                  </form>
+                </div>
+              </div>
+            )}
+            {/* Import Modal */}
+            {showImport && (
+              <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+                <div className="bg-white p-8 rounded-xl shadow-lg w-full max-w-lg relative">
+                  <button
+                    className="absolute top-2 right-2 text-gray-500 hover:text-gray-700 text-2xl"
+                    onClick={closeImport}
+                  >
+                    &times;
+                  </button>
+                  <h3 className="text-xl font-bold mb-4 text-gray-800">Import Devotees from Excel/CSV</h3>
+                  <input
+                    type="file"
+                    accept=".xlsx,.xls,.csv"
+                    onChange={handleFile}
+                    className="mb-4"
+                  />
+                  {importError && <div className="text-red-600 mb-2">{importError}</div>}
+                  {importSuccess && <div className="text-green-600 mb-2">{importSuccess}</div>}
+                  {importRows.length > 0 && (
+                    <>
+                      <div className="mb-2">Preview ({importRows.length} rows):</div>
+                      <div className="max-h-40 overflow-y-auto border mb-2 rounded-md">
+                        <table className="min-w-full text-xs">
+                          <thead>
+                            <tr className="bg-gray-100">
+                              <th className="px-2 py-1 border text-gray-700">Phone</th>
+                              <th className="px-2 py-1 border text-gray-700">Name</th>
+                              <th className="px-2 py-1 border text-gray-700">Email</th>
+                              <th className="px-2 py-1 border text-gray-700">Address</th>
+                              <th className="px-2 py-1 border text-gray-700">Donor Type</th>
+                              <th className="px-2 py-1 border text-gray-700">Association Status</th>
+                              <th className="px-2 py-1 border text-gray-700">Error</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {importValidation.map((v, i) => (
+                              <tr key={i} className="hover:bg-blue-50 transition">
+                                <td className="px-2 py-1 border text-gray-800">{v.row.phone}</td>
+                                <td className="px-2 py-1 border text-gray-800">{v.row.name}</td>
+                                <td className="px-2 py-1 border text-gray-800">{v.row.email}</td>
+                                <td className="px-2 py-1 border text-gray-800">{v.row.address}</td>
+                                <td className="px-2 py-1 border text-gray-800">{v.row.donor_type}</td>
+                                <td className="px-2 py-1 border text-gray-800">{v.row.association_status}</td>
+                                <td className="px-2 py-1 border text-red-600">{v.error}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                      <button
+                        className="bg-green-600 text-white px-4 py-2 rounded shadow hover:bg-green-700 transition"
+                        onClick={handleImport}
+                        disabled={importing || hasImportErrors}
+                      >
+                        {importing ? 'Importing...' : 'Import All'}
+                      </button>
+                      {hasImportErrors && (
+                        <div className="text-red-600 mt-2">Fix all errors before importing.</div>
+                      )}
+                    </>
+                  )}
+                </div>
+              </div>
+            )}
+            {/* Delete Confirmation Modal */}
+            {deleteConfirm.show && (
+              <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+                <div className="bg-white p-8 rounded-xl shadow-lg w-full max-w-sm relative">
+                  <h3 className="text-lg font-bold mb-4 text-gray-800">Delete Devotee</h3>
+                  <p className="mb-4">Are you sure you want to delete this devotee?</p>
+                  <div className="flex justify-end gap-2 mt-4">
+                    <button
+                      className="px-4 py-2 rounded bg-gray-200 hover:bg-gray-300"
+                      onClick={() => setDeleteConfirm({ show: false, phone: null })}
+                      disabled={submitting}
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      className="px-4 py-2 rounded bg-red-600 text-white hover:bg-red-700"
+                      onClick={handleDelete}
+                      disabled={submitting}
+                    >
+                      {submitting ? 'Deleting...' : 'Delete'}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+            {loading ? (
+              <div>Loading...</div>
+            ) : (
+              <div className="overflow-x-auto mt-4">
+                <table className="min-w-full bg-white border rounded-xl overflow-hidden shadow">
+                  <thead>
+                    <tr className="bg-gray-100">
+                      <th className="px-4 py-2 border">Phone</th>
+                      <th className="px-4 py-2 border">Name</th>
+                      <th className="px-4 py-2 border">Email</th>
+                      <th className="px-4 py-2 border">Address</th>
+                      <th className="px-4 py-2 border">Donor Type</th>
+                      <th className="px-4 py-2 border">Association Status</th>
+                      <th className="px-4 py-2 border">Created At</th>
+                      {role === 'admin' && <th className="px-4 py-2 border">Actions</th>}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filtered.map((devotee, idx) => (
+                      <tr
+                        key={devotee.phone}
+                        className={
+                          idx % 2 === 0
+                            ? 'bg-gray-50 hover:bg-blue-50 transition'
+                            : 'bg-white hover:bg-blue-50 transition'
+                        }
+                      >
+                        <td className="px-4 py-2 border">{devotee.phone}</td>
+                        <td className="px-4 py-2 border">{devotee.name}</td>
+                        <td className="px-4 py-2 border">{devotee.email}</td>
+                        <td className="px-4 py-2 border">{devotee.address}</td>
+                        <td className="px-4 py-2 border">{devotee.donor_type}</td>
+                        <td className="px-4 py-2 border">{devotee.association_status}</td>
+                        <td className="px-4 py-2 border">{new Date(devotee.created_at).toLocaleString()}</td>
+                        {role === 'admin' && (
+                          <td className="px-4 py-2 border flex gap-2">
+                            <button
+                              className="bg-yellow-500 text-white px-2 py-1 rounded shadow hover:bg-yellow-600 transition"
+                              onClick={() => openModal(devotee)}
+                            >
+                              Edit
+                            </button>
+                            <button
+                              className="bg-red-500 text-white px-2 py-1 rounded shadow hover:bg-red-600 transition"
+                              onClick={() => setDeleteConfirm({ show: true, phone: devotee.phone })}
+                            >
+                              Delete
+                            </button>
+                          </td>
+                        )}
+                      </tr>
+                    ))}
+                    {filtered.length === 0 && (
+                      <tr>
+                        <td colSpan={role === 'admin' ? 8 : 7} className="text-center py-4">No devotees found.</td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
             )}
           </div>
         </div>
-      )}
-      {/* Delete Confirmation Modal */}
-      {deleteConfirm.show && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50">
-          <div className="bg-white p-6 rounded shadow-md w-full max-w-sm relative">
-            <h3 className="text-lg font-bold mb-4">Delete Devotee</h3>
-            <p>Are you sure you want to delete this devotee?</p>
-            <div className="flex justify-end gap-2 mt-4">
-              <button
-                className="px-4 py-2 rounded bg-gray-200 hover:bg-gray-300"
-                onClick={() => setDeleteConfirm({ show: false, phone: null })}
-                disabled={submitting}
-              >
-                Cancel
-              </button>
-              <button
-                className="px-4 py-2 rounded bg-red-600 text-white hover:bg-red-700"
-                onClick={handleDelete}
-                disabled={submitting}
-              >
-                {submitting ? 'Deleting...' : 'Delete'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-      {loading ? (
-        <div>Loading...</div>
-      ) : (
-        <div className="overflow-x-auto">
-          <table className="min-w-full bg-white border">
-            <thead>
-              <tr>
-                <th className="px-4 py-2 border">Phone</th>
-                <th className="px-4 py-2 border">Name</th>
-                <th className="px-4 py-2 border">Email</th>
-                <th className="px-4 py-2 border">Address</th>
-                <th className="px-4 py-2 border">Donor Type</th>
-                <th className="px-4 py-2 border">Association Status</th>
-                <th className="px-4 py-2 border">Created At</th>
-                {role === 'admin' && <th className="px-4 py-2 border">Actions</th>}
-              </tr>
-            </thead>
-            <tbody>
-              {filtered.map(devotee => (
-                <tr key={devotee.phone}>
-                  <td className="px-4 py-2 border">{devotee.phone}</td>
-                  <td className="px-4 py-2 border">{devotee.name}</td>
-                  <td className="px-4 py-2 border">{devotee.email}</td>
-                  <td className="px-4 py-2 border">{devotee.address}</td>
-                  <td className="px-4 py-2 border">{devotee.donor_type}</td>
-                  <td className="px-4 py-2 border">{devotee.association_status}</td>
-                  <td className="px-4 py-2 border">{new Date(devotee.created_at).toLocaleString()}</td>
-                  {role === 'admin' && (
-                    <td className="px-4 py-2 border flex gap-2">
-                      <button
-                        className="bg-yellow-500 text-white px-2 py-1 rounded hover:bg-yellow-600"
-                        onClick={() => openModal(devotee)}
-                      >
-                        Edit
-                      </button>
-                      <button
-                        className="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600"
-                        onClick={() => setDeleteConfirm({ show: true, phone: devotee.phone })}
-                      >
-                        Delete
-                      </button>
-                    </td>
-                  )}
-                </tr>
-              ))}
-              {filtered.length === 0 && (
-                <tr>
-                  <td colSpan={role === 'admin' ? 8 : 7} className="text-center py-4">No devotees found.</td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
-      )}
       </div>
     </>
   );
