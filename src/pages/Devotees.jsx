@@ -32,6 +32,7 @@ const Devotees = () => {
   const [importError, setImportError] = useState('');
   const [importing, setImporting] = useState(false);
   const [importSuccess, setImportSuccess] = useState('');
+  const [importValidation, setImportValidation] = useState([]); // [{row, error}]
 
   useEffect(() => {
     const fetchRole = async () => {
@@ -157,20 +158,23 @@ const Devotees = () => {
     setImportRows([]);
     setImportError('');
     setImportSuccess('');
+    setImportValidation([]);
   };
   const closeImport = () => {
     setShowImport(false);
     setImportRows([]);
     setImportError('');
     setImportSuccess('');
+    setImportValidation([]);
   };
-  const handleFile = e => {
+  const handleFile = async e => {
     setImportError('');
     setImportSuccess('');
+    setImportValidation([]);
     const file = e.target.files[0];
     if (!file) return;
     const reader = new FileReader();
-    reader.onload = evt => {
+    reader.onload = async evt => {
       const data = new Uint8Array(evt.target.result);
       const workbook = XLSX.read(data, { type: 'array' });
       const sheet = workbook.Sheets[workbook.SheetNames[0]];
@@ -180,9 +184,33 @@ const Devotees = () => {
       if (validRows.length === 0) {
         setImportError('No valid rows found. Each row must have at least phone and name.');
         setImportRows([]);
-      } else {
-        setImportRows(validRows);
+        setImportValidation([]);
+        return;
       }
+      // Check for duplicates within the file
+      const phoneCounts = {};
+      validRows.forEach(row => {
+        const phone = String(row.phone).trim();
+        phoneCounts[phone] = (phoneCounts[phone] || 0) + 1;
+      });
+      // Fetch all existing phone numbers from DB
+      const { data: dbRows, error: dbError } = await supabase
+        .from('devotees')
+        .select('phone');
+      const dbPhones = dbRows ? dbRows.map(d => String(d.phone).trim()) : [];
+      // Validate each row
+      const validation = validRows.map((row, idx) => {
+        const phone = String(row.phone).trim();
+        let error = '';
+        if (phoneCounts[phone] > 1) {
+          error = 'Duplicate phone in file';
+        } else if (dbPhones.includes(phone)) {
+          error = 'Phone already exists in database';
+        }
+        return { row, error, idx };
+      });
+      setImportRows(validRows);
+      setImportValidation(validation);
     };
     reader.readAsArrayBuffer(file);
   };
@@ -191,24 +219,27 @@ const Devotees = () => {
     setImportError('');
     setImportSuccess('');
     // Prepare rows for insert
-    const rows = importRows.map(row => ({
-      phone: String(row.phone).trim(),
-      name: String(row.name).trim(),
-      email: row.email ? String(row.email).trim() : null,
-      address: row.address ? String(row.address).trim() : null,
-      donor_type: row.donor_type || null,
-      association_status: row.association_status || null,
+    const rows = importValidation.filter(v => !v.error).map(v => ({
+      phone: String(v.row.phone).trim(),
+      name: String(v.row.name).trim(),
+      email: v.row.email ? String(v.row.email).trim() : null,
+      address: v.row.address ? String(v.row.address).trim() : null,
+      donor_type: v.row.donor_type || null,
+      association_status: v.row.association_status || null,
     }));
-    const { error, count } = await supabase.from('devotees').insert(rows, { count: 'exact' });
+    const { error } = await supabase.from('devotees').insert(rows);
     setImporting(false);
     if (error) {
       setImportError(error.message);
     } else {
       setImportSuccess(`Imported ${rows.length} devotees successfully!`);
       setImportRows([]);
+      setImportValidation([]);
       fetchDevotees();
     }
   };
+
+  const hasImportErrors = importValidation.some(v => v.error);
 
   return (
     <div className="p-8">
@@ -361,17 +392,19 @@ const Devotees = () => {
                         <th className="px-2 py-1 border">Address</th>
                         <th className="px-2 py-1 border">Donor Type</th>
                         <th className="px-2 py-1 border">Association Status</th>
+                        <th className="px-2 py-1 border">Error</th>
                       </tr>
                     </thead>
                     <tbody>
-                      {importRows.map((row, i) => (
+                      {importValidation.map((v, i) => (
                         <tr key={i}>
-                          <td className="px-2 py-1 border">{row.phone}</td>
-                          <td className="px-2 py-1 border">{row.name}</td>
-                          <td className="px-2 py-1 border">{row.email}</td>
-                          <td className="px-2 py-1 border">{row.address}</td>
-                          <td className="px-2 py-1 border">{row.donor_type}</td>
-                          <td className="px-2 py-1 border">{row.association_status}</td>
+                          <td className="px-2 py-1 border">{v.row.phone}</td>
+                          <td className="px-2 py-1 border">{v.row.name}</td>
+                          <td className="px-2 py-1 border">{v.row.email}</td>
+                          <td className="px-2 py-1 border">{v.row.address}</td>
+                          <td className="px-2 py-1 border">{v.row.donor_type}</td>
+                          <td className="px-2 py-1 border">{v.row.association_status}</td>
+                          <td className="px-2 py-1 border text-red-600">{v.error}</td>
                         </tr>
                       ))}
                     </tbody>
@@ -380,10 +413,13 @@ const Devotees = () => {
                 <button
                   className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
                   onClick={handleImport}
-                  disabled={importing}
+                  disabled={importing || hasImportErrors}
                 >
                   {importing ? 'Importing...' : 'Import All'}
                 </button>
+                {hasImportErrors && (
+                  <div className="text-red-600 mt-2">Fix all errors before importing.</div>
+                )}
               </>
             )}
           </div>
