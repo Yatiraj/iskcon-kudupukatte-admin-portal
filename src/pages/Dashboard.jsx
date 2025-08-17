@@ -1,28 +1,37 @@
-import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabaseClient';
+import Navbar from '../components/Navbar';
 
 const Dashboard = () => {
-  const navigate = useNavigate();
+  const [role, setRole] = useState(null);
+
+  useEffect(() => {
+    const fetchRole = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.user) {
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('role')
+          .eq('id', session.user.id)
+          .single();
+        if (!error && data) setRole(data.role);
+      }
+    };
+    fetchRole();
+  }, []);
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
-    navigate('/login');
   };
 
   return (
-    <div className="p-8">
-      <div className="flex justify-between items-center mb-4">
-        <h2 className="text-xl font-bold">Dashboard</h2>
-        <button
-          onClick={handleLogout}
-          className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
-        >
-          Logout
-        </button>
+    <>
+      <Navbar role={role} onLogout={handleLogout} />
+      <div className="p-8">
+        <h2 className="text-xl font-bold mb-4">Dashboard</h2>
+        {/* Role-based dashboard content will go here */}
       </div>
-      {/* Role-based dashboard content will go here */}
-    </div>
+    </>
   );
 };
 

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabaseClient';
 import * as XLSX from 'xlsx';
+import Navbar from '../components/Navbar';
 
 const initialForm = {
   phone: '',
@@ -48,6 +49,10 @@ const Devotees = () => {
     };
     fetchRole();
   }, []);
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+  };
 
   const fetchDevotees = async () => {
     setLoading(true);
@@ -243,6 +248,7 @@ const Devotees = () => {
 
   return (
     <div className="p-8">
+      <Navbar role={role} onLogout={handleLogout} />
       <h2 className="text-xl font-bold mb-4">Devotee Management</h2>
       <input
         type="text"
