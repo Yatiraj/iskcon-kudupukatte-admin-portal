@@ -34,6 +34,8 @@ const Devotees = () => {
   const [importing, setImporting] = useState(false);
   const [importSuccess, setImportSuccess] = useState('');
   const [importValidation, setImportValidation] = useState([]); // [{row, error}]
+  const [donorTypeFilter, setDonorTypeFilter] = useState('All');
+  const [associationStatusFilter, setAssociationStatusFilter] = useState('All');
 
   useEffect(() => {
     const fetchRole = async () => {
@@ -68,11 +70,13 @@ const Devotees = () => {
     fetchDevotees();
   }, []);
 
-  // Filter devotees by phone or name
+  // Filter devotees by phone, name, donor type, and association status
   const filtered = devotees.filter(
     d =>
-      d.phone.toLowerCase().includes(search.toLowerCase()) ||
-      d.name.toLowerCase().includes(search.toLowerCase())
+      (d.phone.toLowerCase().includes(search.toLowerCase()) ||
+        d.name.toLowerCase().includes(search.toLowerCase())) &&
+      (donorTypeFilter === 'All' || d.donor_type === donorTypeFilter) &&
+      (associationStatusFilter === 'All' || d.association_status === associationStatusFilter)
   );
 
   // Modal form handlers
@@ -271,13 +275,35 @@ const Devotees = () => {
         <div className="p-8 max-w-7xl mx-auto">
           <div className="bg-white rounded-xl shadow-lg p-8">
             <h2 className="text-2xl font-bold mb-6 text-gray-800">Devotee Management</h2>
-            <input
-              type="text"
-              placeholder="Search by phone or name"
-              className="mb-4 p-2 border rounded w-full max-w-md focus:outline-none focus:ring-2 focus:ring-blue-400"
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-            />
+            <div className="flex flex-col md:flex-row md:items-center gap-4 mb-4">
+              <input
+                type="text"
+                placeholder="Search by phone or name"
+                className="p-2 border rounded w-full max-w-md focus:outline-none focus:ring-2 focus:ring-blue-400"
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+              />
+              <select
+                className="p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-400"
+                value={donorTypeFilter}
+                onChange={e => setDonorTypeFilter(e.target.value)}
+              >
+                <option value="All">All Donor Types</option>
+                {donorTypes.map(type => (
+                  <option key={type} value={type}>{type}</option>
+                ))}
+              </select>
+              <select
+                className="p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-400"
+                value={associationStatusFilter}
+                onChange={e => setAssociationStatusFilter(e.target.value)}
+              >
+                <option value="All">All Association Statuses</option>
+                {associationStatuses.map(status => (
+                  <option key={status} value={status}>{status}</option>
+                ))}
+              </select>
+            </div>
             {/* Add Devotee and Import buttons for admin only */}
             {role === 'admin' && (
               <div className="mb-6 flex gap-2">
