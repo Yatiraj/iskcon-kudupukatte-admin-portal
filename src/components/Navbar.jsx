@@ -11,10 +11,13 @@ const Navbar = ({ role, onLogout }) => {
   };
 
   return (
-    <nav className="bg-gray-900 text-white w-full py-3 flex items-center gap-4 shadow-md">
-      <div className="flex items-center gap-2 mr-6 px-6">
-        <img src={logo} alt="ISKCON Kudupu Katte Logo" className="h-12 w-auto" />
-        <span className="text-xl font-bold tracking-wide">Admin Portal</span>
+    <nav className="bg-gray-900 text-white w-full py-3 flex items-center gap-4 shadow-md px-6">
+      <div className="flex items-center gap-4 mr-6">
+        <img src={logo} alt="ISKCON Kudupu Katte Logo" className="h-16 w-auto" />
+        <div className="flex flex-col">
+          <span className="text-lg font-bold tracking-wide leading-tight uppercase">ISKCON KUDUPUKATTE</span>
+          <span className="text-base font-semibold tracking-wide text-blue-200">Admin Portal</span>
+        </div>
       </div>
       <NavLink
         to="/dashboard"
@@ -49,7 +52,6 @@ const Navbar = ({ role, onLogout }) => {
       >
         Logout
       </button>
-      <div />
     </nav>
   );
 };
