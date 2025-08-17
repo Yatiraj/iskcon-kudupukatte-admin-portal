@@ -246,9 +246,28 @@ const Devotees = () => {
 
   const hasImportErrors = importValidation.some(v => v.error);
 
+  // Download Excel handler
+  const handleDownloadExcel = () => {
+    // Prepare data for export
+    const exportRows = devotees.map(({ phone, name, email, address, donor_type, association_status, created_at }) => ({
+      phone,
+      name,
+      email,
+      address,
+      donor_type,
+      association_status,
+      created_at,
+    }));
+    const ws = XLSX.utils.json_to_sheet(exportRows);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Devotees');
+    XLSX.writeFile(wb, 'devotees.xlsx');
+  };
+
   return (
-    <div className="p-8">
+    <>
       <Navbar role={role} onLogout={handleLogout} />
+      <div className="p-8">
       <h2 className="text-xl font-bold mb-4">Devotee Management</h2>
       <input
         type="text"
@@ -271,6 +290,12 @@ const Devotees = () => {
             onClick={openImport}
           >
             Import from Excel
+          </button>
+          <button
+            className="bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-700"
+            onClick={handleDownloadExcel}
+          >
+            Download Excel
           </button>
         </div>
       )}
@@ -510,7 +535,8 @@ const Devotees = () => {
           </table>
         </div>
       )}
-    </div>
+      </div>
+    </>
   );
 };
 
