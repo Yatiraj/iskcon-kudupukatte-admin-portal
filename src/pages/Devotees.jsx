@@ -36,11 +36,14 @@ const Devotees = () => {
   const [importValidation, setImportValidation] = useState([]); // [{row, error}]
   const [donorTypeFilter, setDonorTypeFilter] = useState('All');
   const [associationStatusFilter, setAssociationStatusFilter] = useState('All');
+  const [profiles, setProfiles] = useState([]); // for created_by mapping
+  const [currentUserId, setCurrentUserId] = useState(null);
 
   useEffect(() => {
-    const fetchRole = async () => {
+    const fetchRoleAndUser = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (session?.user) {
+        setCurrentUserId(session.user.id);
         const { data, error } = await supabase
           .from('profiles')
           .select('role')
@@ -49,7 +52,16 @@ const Devotees = () => {
         if (!error && data) setRole(data.role);
       }
     };
-    fetchRole();
+    fetchRoleAndUser();
+  }, []);
+
+  // Fetch all profiles for created_by mapping
+  useEffect(() => {
+    const fetchProfiles = async () => {
+      const { data, error } = await supabase.from('profiles').select('id, email');
+      if (!error && data) setProfiles(data);
+    };
+    fetchProfiles();
   }, []);
 
   const handleLogout = async () => {
@@ -139,6 +151,7 @@ const Devotees = () => {
           address: form.address.trim() || null,
           donor_type: form.donor_type || null,
           association_status: form.association_status || null,
+          created_by: currentUserId,
         },
       ]);
       setSubmitting(false);
@@ -268,11 +281,14 @@ const Devotees = () => {
     XLSX.writeFile(wb, 'devotees.xlsx');
   };
 
+  // Helper to get creator email
+  const getCreatorEmail = (id) => profiles.find(p => p.id === id)?.email || '';
+
   return (
     <>
       <Navbar role={role} onLogout={handleLogout} />
       <div className="min-h-screen bg-gray-100">
-        <div className="p-8 max-w-7xl mx-auto">
+        <div className="p-8 max-w-screen-2xl mx-auto">
           <div className="bg-white rounded-xl shadow-lg p-8">
             <h2 className="text-2xl font-bold mb-6 text-gray-800">Devotee Management</h2>
             <div className="flex flex-col md:flex-row md:items-center gap-4 mb-4">
@@ -512,8 +528,8 @@ const Devotees = () => {
             {loading ? (
               <div>Loading...</div>
             ) : (
-              <div className="overflow-x-auto mt-4">
-                <table className="min-w-full bg-white border rounded-xl overflow-hidden shadow">
+              <div className="overflow-x-auto w-full mt-4">
+                <table className="min-w-[1200px] w-full bg-white border rounded-xl overflow-hidden shadow">
                   <thead>
                     <tr className="bg-gray-100">
                       <th className="px-4 py-2 border">Phone</th>
@@ -523,6 +539,7 @@ const Devotees = () => {
                       <th className="px-4 py-2 border">Donor Type</th>
                       <th className="px-4 py-2 border">Association Status</th>
                       <th className="px-4 py-2 border">Created At</th>
+                      <th className="px-4 py-2 border">Created By</th>
                       {role === 'admin' && <th className="px-4 py-2 border">Actions</th>}
                     </tr>
                   </thead>
@@ -543,6 +560,7 @@ const Devotees = () => {
                         <td className="px-4 py-2 border">{devotee.donor_type}</td>
                         <td className="px-4 py-2 border">{devotee.association_status}</td>
                         <td className="px-4 py-2 border">{new Date(devotee.created_at).toLocaleString()}</td>
+                        <td className="px-4 py-2 border">{getCreatorEmail(devotee.created_by)}</td>
                         {role === 'admin' && (
                           <td className="px-4 py-2 border flex gap-2">
                             <button
@@ -563,7 +581,7 @@ const Devotees = () => {
                     ))}
                     {filtered.length === 0 && (
                       <tr>
-                        <td colSpan={role === 'admin' ? 8 : 7} className="text-center py-4">No devotees found.</td>
+                        <td colSpan={role === 'admin' ? 9 : 8} className="text-center py-4">No devotees found.</td>
                       </tr>
                     )}
                   </tbody>

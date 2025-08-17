@@ -34,7 +34,7 @@ const Navbar = ({ role, onLogout }) => {
             `px-3 py-2 rounded transition-colors duration-150 ${isActive ? 'bg-gray-800 font-bold' : 'hover:bg-gray-700'}`
           }
         >
-          Users
+          Portal Users
         </NavLink>
       )}
       <div className="flex-1" />
