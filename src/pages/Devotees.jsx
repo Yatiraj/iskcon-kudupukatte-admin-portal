@@ -320,21 +320,25 @@ const Devotees = () => {
                 ))}
               </select>
             </div>
-            {/* Add Devotee and Import buttons for admin only */}
-            {role === 'admin' && (
+            {/* Add Devotee and Import buttons for admin only, but Download Excel for all */}
+            {(role === 'admin' || role === 'viewer') && (
               <div className="mb-6 flex gap-2">
-                <button
-                  className="bg-blue-600 text-white px-4 py-2 rounded shadow hover:bg-blue-700 transition"
-                  onClick={() => openModal()}
-                >
-                  Add Devotee
-                </button>
-                <button
-                  className="bg-green-600 text-white px-4 py-2 rounded shadow hover:bg-green-700 transition"
-                  onClick={openImport}
-                >
-                  Import from Excel
-                </button>
+                {role === 'admin' && (
+                  <>
+                    <button
+                      className="bg-blue-600 text-white px-4 py-2 rounded shadow hover:bg-blue-700 transition"
+                      onClick={() => openModal()}
+                    >
+                      Add Devotee
+                    </button>
+                    <button
+                      className="bg-green-600 text-white px-4 py-2 rounded shadow hover:bg-green-700 transition"
+                      onClick={openImport}
+                    >
+                      Import from Excel
+                    </button>
+                  </>
+                )}
                 <button
                   className="bg-gray-600 text-white px-4 py-2 rounded shadow hover:bg-gray-700 transition"
                   onClick={handleDownloadExcel}
